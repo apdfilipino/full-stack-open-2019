@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'
 
 import personService from './services/person'
 
-import PersonForm from './components/PersonForm';
-import Filter from './components/Filter';
-import Person from './components/Person';
+import PersonForm from './components/PersonForm'
+import Filter from './components/Filter'
+import Person from './components/Person'
+import Notif from './components/Notif'
 
 const App = () => {
 
@@ -12,6 +13,9 @@ const App = () => {
   const [ name, setName ] = useState('')
   const [ phoneNumber, setPhoneNumber ] = useState('')
   const [ filter, setFilter ] = useState('')
+
+  const [ message, setMessage ] = useState('')
+  const [ className, setClassName] = useState('')
 
   const nameChange = (event) => {
     setName(event.target.value)
@@ -38,6 +42,11 @@ const App = () => {
       personService
       .remove(id)
       .then(() => {
+        greenNotif(`Removed ${name} successfully`)
+        setPersons(persons.filter(p => p.id != id))
+      })
+      .catch(error => {
+        errorNotif(`Information of ${name} has already been removed from the server`)
         setPersons(persons.filter(p => p.id != id))
       })
     }
@@ -63,7 +72,10 @@ const App = () => {
         }
         personService
           .create(newPerson)
-          .then(created => setPersons(persons.concat(created)))
+          .then(created => {
+            setPersons(persons.concat(created))
+            greenNotif(`Added ${newPerson.name}`)
+          })
       }
     }
     else{
@@ -79,8 +91,30 @@ const App = () => {
     personService
       .update(person.id, newPerson)
       .then( u => { //u for updated
+        greenNotif(`Updated ${newPerson.name}'s number successfully`)
         setPersons(persons.map( p => p.id !== u.id ? p : u))
       })
+      .catch(error => {
+        errorNotif(`Information of ${name} has already been removed from the server`)
+        setPersons(persons.filter(p => p.name !== newPerson.name))
+      })
+  }
+
+  const showNotif = (message, className) => {
+    setMessage(message)
+    setClassName(className)
+    setTimeout(() => {
+      setMessage(null)
+      setClassName('supersmall')
+    }, 2500)
+  }
+
+  const errorNotif = (message) => {
+    showNotif(message, 'negative')
+  }
+
+  const greenNotif = (message) => {
+    showNotif(message, 'positive')
   }
 
   useEffect(initialPersons, [])
@@ -89,6 +123,7 @@ const App = () => {
     <div>
 
       <h2>Phonebook</h2>
+      <Notif message={message} className={className} />
       <Filter value={filter} onChange={filtering} />
 
       <h3>Add a new</h3>

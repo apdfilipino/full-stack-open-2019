@@ -1,11 +1,34 @@
 const express = require('express')
 const bodyParser = require('body-parser')
+const morgan = require('morgan')
 
 const PORT = 3001
 const app = express()
 
-app.use(bodyParser.json())
+const morganToken = (tokens, req, res) => {
+    if(tokens.method(req,res) === "POST"){
+        return [
+            tokens.method(req, res),
+            tokens.url(req, res),
+            tokens.status(req, res),
+            tokens.res(req, res, 'content-length'), '-',
+            tokens['response-time'](req, res), 'ms',
+            JSON.stringify(req.body)
+          ].join(' ')
+    }
+    else{
+        return [
+            tokens.method(req, res),
+            tokens.url(req, res),
+            tokens.status(req, res),
+            tokens.res(req, res, 'content-length'), '-',
+            tokens['response-time'](req, res), 'ms'
+          ].join(' ')
+    }
+}
 
+app.use(bodyParser.json())
+app.use(morgan(morganToken))
 
 app.get('/info', (req, res) => {
     const phoneLength = persons.length

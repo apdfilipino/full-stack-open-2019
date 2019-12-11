@@ -48,6 +48,10 @@ app.get('/api/persons/:id', (req, res) =>{
     }
 })
 
+app.get('/api/persons', (req, res) => {
+    return res.json(persons)
+})
+
 app.delete('/api/persons/:id', (req, res) => {
     const id = Number(req.params.id)
     persons = persons.filter( p => p.id !== id)
@@ -80,6 +84,12 @@ app.post('/api/persons', (req, res) => {
     }
 })
 
+const unknownEndpoint = (request, response) => {
+    response.status(404).send({ error: 'unknown endpoint' })
+}
+  
+app.use(unknownEndpoint)
+
 
 
 app.listen(PORT,()=>{
@@ -88,11 +98,19 @@ app.listen(PORT,()=>{
 
 
 const generateId = () => {
-    return persons.length > 0 ? Math.max(...persons.map(p => p.id)) + 1 : 0
+    getrandom = () => Math.floor(Math.random() * 123412)
+    let id = getrandom()
+    const ids = persons.map(p => p.id)
+
+    while(ids.includes(id)){
+        id = getrandom()
+    }
+
+    return id
 }
 
 
-const persons = [
+let persons = [
     { 
         "name": "Arto Hellas", 
         "number": "040-123456",
